@@ -14,7 +14,7 @@ port (
 end normal ; 
 
 architecture rule of normal is 
-	signal run, wmem, rmem, rreg, wreg, st0, nop, add, sub, aand, inc, ld, st, jc, jz, jmp, oout, nnot, xxor, oor, dec, stp : std_logic ; 
+	signal run, wmem, rmem, rreg, wreg, st0, nop, add, sub, aand, inc, ld, st, jc, jz, jmp, oout, mov, xxor, oor, dec, stp : std_logic ; 
 begin
 
 	-- first check swcba
@@ -36,7 +36,7 @@ begin
 	jz <= '1' when ( ir="1000" and run='1' and st0='1') else '0' ; 
 	jmp <= '1' when ( ir="1001" and run='1' and st0='1') else '0' ; 
 	oout <= '1' when ( ir="1010" and run='1' and st0='1') else '0' ; 
-	nnot <= '1' when ( ir="1011" and run='1' and st0='1') else '0' ; 
+	mov <= '1' when ( ir="1011" and run='1' and st0='1') else '0' ; 
 	xxor <= '1' when ( ir="1100" and run='1' and st0='1') else '0' ; 
 	oor <= '1' when ( ir="1101" and run='1' and st0='1') else '0' ; 
 	dec <= '1' when ( ir="1110" and run='1' and st0='1') else '0' ; 
@@ -58,7 +58,7 @@ begin
 	end process ;
 	
 	-- write the expressions of out signals based on the translation table
-	drw <= (wreg and (w(1) or w(2))) or (w(2) and (add or sub or aand or xxor or oor or inc or dec or nnot)) or (w(3) and ld) ; 
+	drw <= (wreg and (w(1) or w(2))) or (w(2) and (add or sub or aand or xxor or oor or inc or dec or mov)) or (w(3) and ld) ; 
 	pcinc <= run and st0 and w(1) ;  
 	lpc <= (run and (not st0) and w(1)) or (jmp and w(2)) ; 
 	lar <= ((not st0) and w(1) and (wmem or rmem)) or (w(2) and (ld or st)) ; 
@@ -67,13 +67,13 @@ begin
 	memw <= (st0 and w(1) and wmem) or (w(3) and st) ; 
 	stop <= ((not st0) and w(1) and run) or (w(1) and (wmem and rmem)) or ((w(1) or w(2)) and (rreg or wreg)) or (w(2) and stp) ;
 	lir <= run and st0 and w(1) ; 
-	ldz <= w(2) and (add or sub or aand or xxor or oor or inc or dec or nnot) ; 
+	ldz <= w(2) and (add or sub or aand or xxor or oor or inc or dec) ; 
 	ldc <= w(2) and (add or sub or inc or dec) ; 
 	short <= ((not st0) and w(1) and run) or (w(1) and (wmem or rmem)) ;
 	long <= (w(2) and (ld or st)) ; 
-	cin <= (w(2) and (add or dec)) ; 
-	m <= (w(2) and (aand or xxor or oor or ld or nnot or jmp or oout)) or ((w(2) or w(3)) and st) ; 
-	abus <= (w(2) and (add or sub or aand or xxor or oor or inc or dec or nnot or ld or jmp or oout)) or ((w(2) or w(3)) and st) ; 
+	cin <= (w(2) and (add or dec or mov)) ; 
+	m <= (w(2) and (aand or xxor or oor or ld or jmp or oout)) or ((w(2) or w(3)) and st) ; 
+	abus <= (w(2) and (add or sub or aand or xxor or oor or inc or dec or mov or ld or jmp or oout)) or ((w(2) or w(3)) and st) ; 
 	sbus <= ((not st0) and w(1) and (run or rmem)) or (w(1) and wmem) or ((w(1) or w(2)) and wreg) ; 
 	mbus <= (st0 and w(1) and rmem) or (w(3) and ld) ; 
 	selctl <= (w(1) and (wmem or rmem)) or ((w(1) or w(2)) and (rreg or wreg)) ; 
